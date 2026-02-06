@@ -280,17 +280,17 @@ const stepHandler = getWorldHandlers().createQueueHandler(
             // operations (e.g., stream loading) are added to `ops` and executed later
             // via Promise.all(ops) - their timing is not included in this measurement.
             const ops: Promise<void>[] = [];
-            const hydratedInput = await trace(
+            const hydratedInput = (await trace(
               'step.hydrate',
               {},
               async (hydrateSpan) => {
                 const startTime = Date.now();
-                const result = await hydrateStepArguments(
+                const result = (await hydrateStepArguments(
                   step.input,
                   workflowRunId,
                   world,
                   ops
-                );
+                )) as any;
                 const durationMs = Date.now() - startTime;
                 hydrateSpan?.setAttributes({
                   ...Attribute.StepArgumentsCount(result.args.length),
@@ -298,7 +298,7 @@ const stepHandler = getWorldHandlers().createQueueHandler(
                 });
                 return result;
               }
-            );
+            )) as any;
 
             const args = hydratedInput.args;
             const thisVal = hydratedInput.thisVal ?? null;

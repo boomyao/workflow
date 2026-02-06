@@ -101,7 +101,7 @@ export function createCreateHook(ctx: WorkflowOrchestratorContext) {
               ctx.globalThis
             )
               .then((payload) => {
-                next.resolve(payload);
+                next.resolve(payload as T);
               })
               .catch((error) => {
                 next.reject(error);
@@ -152,7 +152,7 @@ export function createCreateHook(ctx: WorkflowOrchestratorContext) {
             ctx.globalThis
           )
             .then((payload) => {
-              resolvers.resolve(payload);
+              resolvers.resolve(payload as T);
             })
             .catch((error) => {
               resolvers.reject(error);

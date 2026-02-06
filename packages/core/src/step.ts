@@ -149,7 +149,7 @@ export function createUseStep(ctx: WorkflowOrchestratorContext) {
             ctx.globalThis
           )
             .then((hydratedResult) => {
-              resolve(hydratedResult);
+              resolve(hydratedResult as Result);
             })
             .catch((error) => {
               reject(error);
