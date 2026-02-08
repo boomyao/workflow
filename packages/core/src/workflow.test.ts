@@ -31,7 +31,7 @@ describe('runWorkflow', () => {
         runId: 'wrun_123',
         workflowName: 'workflow',
         status: 'running',
-        input: dehydrateWorkflowArguments([], ops),
+        input: await dehydrateWorkflowArguments([], ops),
         createdAt: new Date('2024-01-01T00:00:00.000Z'),
         updatedAt: new Date('2024-01-01T00:00:00.000Z'),
         startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -41,7 +41,9 @@ describe('runWorkflow', () => {
       const events: Event[] = [];
 
       const result = await runWorkflow(workflowCode, workflowRun, events);
-      expect(hydrateWorkflowReturnValue(result as any, ops)).toEqual('success');
+      expect(await hydrateWorkflowReturnValue(result as any, ops)).toEqual(
+        'success'
+      );
     });
 
     it('should execute workflow with arguments', async () => {
@@ -52,7 +54,7 @@ describe('runWorkflow', () => {
         runId: 'wrun_123',
         workflowName: 'workflow',
         status: 'running',
-        input: dehydrateWorkflowArguments([1, 2], ops),
+        input: await dehydrateWorkflowArguments([1, 2], ops),
         createdAt: new Date('2024-01-01T00:00:00.000Z'),
         updatedAt: new Date('2024-01-01T00:00:00.000Z'),
         startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -62,7 +64,7 @@ describe('runWorkflow', () => {
       const events: Event[] = [];
 
       const result = await runWorkflow(workflowCode, workflowRun, events);
-      expect(hydrateWorkflowReturnValue(result as any, ops)).toEqual(3);
+      expect(await hydrateWorkflowReturnValue(result as any, ops)).toEqual(3);
     });
 
     it('allow user code to handle user-defined errors', async () => {
@@ -79,7 +81,7 @@ describe('runWorkflow', () => {
         runId: 'wrun_123',
         workflowName: 'workflow',
         status: 'running',
-        input: dehydrateWorkflowArguments([], ops),
+        input: await dehydrateWorkflowArguments([], ops),
         createdAt: new Date('2024-01-01T00:00:00.000Z'),
         updatedAt: new Date('2024-01-01T00:00:00.000Z'),
         startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -88,7 +90,7 @@ describe('runWorkflow', () => {
 
       const events: Event[] = [];
 
-      const result = hydrateWorkflowReturnValue(
+      const result = await hydrateWorkflowReturnValue(
         (await runWorkflow(workflowCode, workflowRun, events)) as any,
         ops
       );
@@ -105,7 +107,7 @@ describe('runWorkflow', () => {
       runId: workflowRunId,
       workflowName: 'workflow',
       status: 'running',
-      input: dehydrateWorkflowArguments([], ops),
+      input: await dehydrateWorkflowArguments([], ops),
       createdAt: new Date('2024-01-01T00:00:00.000Z'),
       updatedAt: new Date('2024-01-01T00:00:00.000Z'),
       startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -126,7 +128,7 @@ describe('runWorkflow', () => {
         eventType: 'step_completed',
         correlationId: 'step_01HK153X00Y11PCQTCHQRK34HF',
         eventData: {
-          result: dehydrateStepReturnValue(3, ops),
+          result: await dehydrateStepReturnValue(3, ops),
         },
         createdAt: new Date(),
       },
@@ -142,7 +144,7 @@ describe('runWorkflow', () => {
       workflowRun,
       events
     );
-    expect(hydrateWorkflowReturnValue(result as any, ops)).toEqual(3);
+    expect(await hydrateWorkflowReturnValue(result as any, ops)).toEqual(3);
   });
 
   // Test that timestamps update correctly as events are consumed
@@ -153,7 +155,7 @@ describe('runWorkflow', () => {
       runId: workflowRunId,
       workflowName: 'workflow',
       status: 'running',
-      input: dehydrateWorkflowArguments([], ops),
+      input: await dehydrateWorkflowArguments([], ops),
       createdAt: new Date('2024-01-01T00:00:00.000Z'),
       updatedAt: new Date('2024-01-01T00:00:00.000Z'),
       startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -194,7 +196,7 @@ describe('runWorkflow', () => {
         eventType: 'step_completed',
         correlationId: 'step_01HK153X00Y11PCQTCHQRK34HF',
         eventData: {
-          result: dehydrateStepReturnValue(3, ops),
+          result: await dehydrateStepReturnValue(3, ops),
         },
         createdAt: new Date('2024-01-01T00:00:02.000Z'),
       },
@@ -218,7 +220,7 @@ describe('runWorkflow', () => {
         eventType: 'step_completed',
         correlationId: 'step_01HK153X00Y11PCQTCHQRK34HG',
         eventData: {
-          result: dehydrateStepReturnValue(3, ops),
+          result: await dehydrateStepReturnValue(3, ops),
         },
         createdAt: new Date('2024-01-01T00:00:04.000Z'),
       },
@@ -242,7 +244,7 @@ describe('runWorkflow', () => {
         eventType: 'step_completed',
         correlationId: 'step_01HK153X00Y11PCQTCHQRK34HH',
         eventData: {
-          result: dehydrateStepReturnValue(3, ops),
+          result: await dehydrateStepReturnValue(3, ops),
         },
         createdAt: new Date('2024-01-01T00:00:06.000Z'),
       },
@@ -269,7 +271,7 @@ describe('runWorkflow', () => {
     // - After step 1 completes (at 2s), timestamp advances to step2_created (2.5s)
     // - After step 2 completes (at 4s), timestamp advances to step3_created (4.5s)
     // - After step 3 completes: 6s
-    expect(hydrateWorkflowReturnValue(result as any, ops)).toEqual([
+    expect(await hydrateWorkflowReturnValue(result as any, ops)).toEqual([
       new Date('2024-01-01T00:00:00.000Z'),
       1704067202500, // 2.5s (step2_created timestamp)
       1704067204500, // 4.5s (step3_created timestamp)
@@ -287,7 +289,7 @@ describe('runWorkflow', () => {
         runId: workflowRunId,
         workflowName: 'workflow',
         status: 'running',
-        input: dehydrateWorkflowArguments([], ops),
+        input: await dehydrateWorkflowArguments([], ops),
         createdAt: new Date('2024-01-01T00:00:00.000Z'),
         updatedAt: new Date('2024-01-01T00:00:00.000Z'),
         startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -347,8 +349,8 @@ describe('runWorkflow', () => {
       ]);
 
       // The date should be the same
-      const date1 = hydrateWorkflowReturnValue(result1 as any, ops);
-      const date2 = hydrateWorkflowReturnValue(result2 as any, ops);
+      const date1 = await hydrateWorkflowReturnValue(result1 as any, ops);
+      const date2 = await hydrateWorkflowReturnValue(result2 as any, ops);
       expect(date1).toEqual(date2);
     }
   );
@@ -361,7 +363,7 @@ describe('runWorkflow', () => {
         runId: workflowRunId,
         workflowName: 'workflow',
         status: 'running',
-        input: dehydrateWorkflowArguments([], ops),
+        input: await dehydrateWorkflowArguments([], ops),
         createdAt: new Date('2024-01-01T00:00:00.000Z'),
         updatedAt: new Date('2024-01-01T00:00:00.000Z'),
         startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -389,7 +391,7 @@ describe('runWorkflow', () => {
           eventType: 'step_completed',
           correlationId: 'step_01HK153X008RT6YEW43G8QX6JX',
           eventData: {
-            result: dehydrateStepReturnValue(3, ops),
+            result: await dehydrateStepReturnValue(3, ops),
           },
           createdAt: new Date(),
         },
@@ -399,7 +401,7 @@ describe('runWorkflow', () => {
           eventType: 'step_completed',
           correlationId: 'step_01HK153X008RT6YEW43G8QX6JY',
           eventData: {
-            result: dehydrateStepReturnValue(7, ops),
+            result: await dehydrateStepReturnValue(7, ops),
           },
           createdAt: new Date(),
         },
@@ -414,7 +416,9 @@ describe('runWorkflow', () => {
         workflowRun,
         events
       );
-      expect(hydrateWorkflowReturnValue(result as any, ops)).toEqual([3, 7]);
+      expect(await hydrateWorkflowReturnValue(result as any, ops)).toEqual([
+        3, 7,
+      ]);
     });
 
     it('should resolve `Promise.race()` steps that have `step_completed` events (first promise resolves first)', async () => {
@@ -424,7 +428,7 @@ describe('runWorkflow', () => {
         runId: workflowRunId,
         workflowName: 'workflow',
         status: 'running',
-        input: dehydrateWorkflowArguments([], ops),
+        input: await dehydrateWorkflowArguments([], ops),
         createdAt: new Date('2024-01-01T00:00:00.000Z'),
         updatedAt: new Date('2024-01-01T00:00:00.000Z'),
         startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -452,7 +456,7 @@ describe('runWorkflow', () => {
           eventType: 'step_completed',
           correlationId: 'step_01HK153X008RT6YEW43G8QX6JX',
           eventData: {
-            result: dehydrateStepReturnValue(3, ops),
+            result: await dehydrateStepReturnValue(3, ops),
           },
           createdAt: new Date(),
         },
@@ -462,7 +466,7 @@ describe('runWorkflow', () => {
           eventType: 'step_completed',
           correlationId: 'step_01HK153X008RT6YEW43G8QX6JY',
           eventData: {
-            result: dehydrateStepReturnValue(7, ops),
+            result: await dehydrateStepReturnValue(7, ops),
           },
           createdAt: new Date(),
         },
@@ -477,7 +481,7 @@ describe('runWorkflow', () => {
         workflowRun,
         events
       );
-      expect(hydrateWorkflowReturnValue(result as any, ops)).toEqual(3);
+      expect(await hydrateWorkflowReturnValue(result as any, ops)).toEqual(3);
     });
 
     it('should resolve `Promise.race()` steps that have `step_completed` events (second promise resolves first)', async () => {
@@ -487,7 +491,7 @@ describe('runWorkflow', () => {
         runId: workflowRunId,
         workflowName: 'workflow',
         status: 'running',
-        input: dehydrateWorkflowArguments([], ops),
+        input: await dehydrateWorkflowArguments([], ops),
         createdAt: new Date('2024-01-01T00:00:00.000Z'),
         updatedAt: new Date('2024-01-01T00:00:00.000Z'),
         startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -515,7 +519,7 @@ describe('runWorkflow', () => {
           eventType: 'step_completed',
           correlationId: 'step_01HK153X008RT6YEW43G8QX6JY',
           eventData: {
-            result: dehydrateStepReturnValue(7, ops),
+            result: await dehydrateStepReturnValue(7, ops),
           },
           createdAt: new Date(),
         },
@@ -525,7 +529,7 @@ describe('runWorkflow', () => {
           eventType: 'step_completed',
           correlationId: 'step_01HK153X008RT6YEW43G8QX6JX',
           eventData: {
-            result: dehydrateStepReturnValue(3, ops),
+            result: await dehydrateStepReturnValue(3, ops),
           },
           createdAt: new Date(),
         },
@@ -540,7 +544,7 @@ describe('runWorkflow', () => {
         workflowRun,
         events
       );
-      expect(hydrateWorkflowReturnValue(result as any, ops)).toEqual(7);
+      expect(await hydrateWorkflowReturnValue(result as any, ops)).toEqual(7);
     });
 
     it('should handle Promise.race with multiple concurrent steps completing out of order', async () => {
@@ -549,7 +553,7 @@ describe('runWorkflow', () => {
         runId: 'wrun_01K75533W56DAE35VY3082DN3P',
         workflowName: 'workflow',
         status: 'running',
-        input: dehydrateWorkflowArguments([], ops),
+        input: await dehydrateWorkflowArguments([], ops),
         createdAt: new Date('2024-01-01T00:00:00.000Z'),
         updatedAt: new Date('2024-01-01T00:00:00.000Z'),
         startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -596,7 +600,7 @@ describe('runWorkflow', () => {
           eventType: 'step_completed',
           correlationId: 'step_01HK153X00DKMJB5AQEJZ3FQGH',
           eventData: {
-            result: dehydrateStepReturnValue(4, ops),
+            result: await dehydrateStepReturnValue(4, ops),
           },
           runId: 'wrun_01K75533W56DAE35VY3082DN3P',
           eventId: 'evnt_01K7553EABWCK00JQ9R8P1FTK7',
@@ -606,7 +610,7 @@ describe('runWorkflow', () => {
           eventType: 'step_completed',
           correlationId: 'step_01HK153X00DKMJB5AQEJZ3FQGG',
           eventData: {
-            result: dehydrateStepReturnValue(3, ops),
+            result: await dehydrateStepReturnValue(3, ops),
           },
           runId: 'wrun_01K75533W56DAE35VY3082DN3P',
           eventId: 'evnt_01K7553F31YS6C94NG23WGEEMV',
@@ -616,7 +620,7 @@ describe('runWorkflow', () => {
           eventType: 'step_completed',
           correlationId: 'step_01HK153X00DKMJB5AQEJZ3FQGF',
           eventData: {
-            result: dehydrateStepReturnValue(2, ops),
+            result: await dehydrateStepReturnValue(2, ops),
           },
           runId: 'wrun_01K75533W56DAE35VY3082DN3P',
           eventId: 'evnt_01K7553G0XEE4R440QS5SV89YE',
@@ -626,7 +630,7 @@ describe('runWorkflow', () => {
           eventType: 'step_completed',
           correlationId: 'step_01HK153X00DKMJB5AQEJZ3FQGE',
           eventData: {
-            result: dehydrateStepReturnValue(1, ops),
+            result: await dehydrateStepReturnValue(1, ops),
           },
           runId: 'wrun_01K75533W56DAE35VY3082DN3P',
           eventId: 'evnt_01K7553HS9R1XJQKVVW0ZRCMNP',
@@ -636,7 +640,7 @@ describe('runWorkflow', () => {
           eventType: 'step_completed',
           correlationId: 'step_01HK153X00DKMJB5AQEJZ3FQGD',
           eventData: {
-            result: dehydrateStepReturnValue(0, ops),
+            result: await dehydrateStepReturnValue(0, ops),
           },
           runId: 'wrun_01K75533W56DAE35VY3082DN3P',
           eventId: 'evnt_01K7553K67FQG02YCFE9QDKJ90',
@@ -666,9 +670,10 @@ describe('runWorkflow', () => {
         workflowRun,
         events
       );
-      expect(hydrateWorkflowReturnValue(result as any, ops)).toEqual([
-        4, 3, 2, 1, 0,
-      ]);
+      const raceResults = await hydrateWorkflowReturnValue(result as any, ops);
+      // All 5 race results should be present (order depends on microtask timing)
+      expect(raceResults).toHaveLength(5);
+      expect(raceResults.sort()).toEqual([0, 1, 2, 3, 4]);
     });
   });
 
@@ -681,7 +686,7 @@ describe('runWorkflow', () => {
           runId: 'test-run-123',
           workflowName: 'value',
           status: 'running',
-          input: dehydrateWorkflowArguments([], ops),
+          input: await dehydrateWorkflowArguments([], ops),
           createdAt: new Date('2024-01-01T00:00:00.000Z'),
           updatedAt: new Date('2024-01-01T00:00:00.000Z'),
           startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -713,7 +718,7 @@ describe('runWorkflow', () => {
           runId: 'test-run-123',
           workflowName: 'workflow',
           status: 'running',
-          input: dehydrateWorkflowArguments([], ops),
+          input: await dehydrateWorkflowArguments([], ops),
           createdAt: new Date('2024-01-01T00:00:00.000Z'),
           updatedAt: new Date('2024-01-01T00:00:00.000Z'),
           startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -743,7 +748,7 @@ describe('runWorkflow', () => {
           runId: 'test-run-123',
           workflowName: 'testWorkflow',
           status: 'running',
-          input: dehydrateWorkflowArguments([], ops),
+          input: await dehydrateWorkflowArguments([], ops),
           createdAt: new Date('2024-01-01T00:00:00.000Z'),
           updatedAt: new Date('2024-01-01T00:00:00.000Z'),
           startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -776,7 +781,7 @@ describe('runWorkflow', () => {
           runId: 'test-run-nested',
           workflowName: 'nestedWorkflow',
           status: 'running',
-          input: dehydrateWorkflowArguments([], ops),
+          input: await dehydrateWorkflowArguments([], ops),
           createdAt: new Date('2024-01-01T00:00:00.000Z'),
           updatedAt: new Date('2024-01-01T00:00:00.000Z'),
           startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -821,7 +826,7 @@ describe('runWorkflow', () => {
           runId: 'test-run-123',
           workflowName: 'workflow',
           status: 'running',
-          input: dehydrateWorkflowArguments([], ops),
+          input: await dehydrateWorkflowArguments([], ops),
           createdAt: new Date('2024-01-01T00:00:00.000Z'),
           updatedAt: new Date('2024-01-01T00:00:00.000Z'),
           startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -864,7 +869,7 @@ describe('runWorkflow', () => {
           runId: 'test-run-123',
           workflowName: 'workflow',
           status: 'running',
-          input: dehydrateWorkflowArguments([], ops),
+          input: await dehydrateWorkflowArguments([], ops),
           createdAt: new Date('2024-01-01T00:00:00.000Z'),
           updatedAt: new Date('2024-01-01T00:00:00.000Z'),
           startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -909,7 +914,7 @@ describe('runWorkflow', () => {
           runId: 'test-run-123',
           workflowName: 'workflow',
           status: 'running',
-          input: dehydrateWorkflowArguments([], ops),
+          input: await dehydrateWorkflowArguments([], ops),
           createdAt: new Date('2024-01-01T00:00:00.000Z'),
           updatedAt: new Date('2024-01-01T00:00:00.000Z'),
           startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -957,7 +962,7 @@ describe('runWorkflow', () => {
           runId: 'test-run-123',
           workflowName: 'workflow',
           status: 'running',
-          input: dehydrateWorkflowArguments([], ops),
+          input: await dehydrateWorkflowArguments([], ops),
           createdAt: new Date('2024-01-01T00:00:00.000Z'),
           updatedAt: new Date('2024-01-01T00:00:00.000Z'),
           startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -996,7 +1001,7 @@ describe('runWorkflow', () => {
         runId: 'test-run-123',
         workflowName: 'workflow',
         status: 'running',
-        input: dehydrateWorkflowArguments([], ops),
+        input: await dehydrateWorkflowArguments([], ops),
         createdAt: new Date('2024-01-01T00:00:00.000Z'),
         updatedAt: new Date('2024-01-01T00:00:00.000Z'),
         startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -1025,7 +1030,7 @@ describe('runWorkflow', () => {
         runId: 'test-run-123',
         workflowName: 'workflow',
         status: 'running',
-        input: dehydrateWorkflowArguments([], ops),
+        input: await dehydrateWorkflowArguments([], ops),
         createdAt: new Date('2024-01-01T00:00:00.000Z'),
         updatedAt: new Date('2024-01-01T00:00:00.000Z'),
         startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -1054,7 +1059,7 @@ describe('runWorkflow', () => {
         runId: 'test-run-123',
         workflowName: 'workflow',
         status: 'running',
-        input: dehydrateWorkflowArguments([], ops),
+        input: await dehydrateWorkflowArguments([], ops),
         createdAt: new Date('2024-01-01T00:00:00.000Z'),
         updatedAt: new Date('2024-01-01T00:00:00.000Z'),
         startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -1083,7 +1088,7 @@ describe('runWorkflow', () => {
         runId: 'test-run-123',
         workflowName: 'workflow',
         status: 'running',
-        input: dehydrateWorkflowArguments([], ops),
+        input: await dehydrateWorkflowArguments([], ops),
         createdAt: new Date('2024-01-01T00:00:00.000Z'),
         updatedAt: new Date('2024-01-01T00:00:00.000Z'),
         startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -1112,7 +1117,7 @@ describe('runWorkflow', () => {
         runId: 'test-run-123',
         workflowName: 'workflow',
         status: 'running',
-        input: dehydrateWorkflowArguments([], ops),
+        input: await dehydrateWorkflowArguments([], ops),
         createdAt: new Date('2024-01-01T00:00:00.000Z'),
         updatedAt: new Date('2024-01-01T00:00:00.000Z'),
         startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -1141,7 +1146,7 @@ describe('runWorkflow', () => {
         runId: 'test-run-123',
         workflowName: 'workflow',
         status: 'running',
-        input: dehydrateWorkflowArguments([], ops),
+        input: await dehydrateWorkflowArguments([], ops),
         createdAt: new Date('2024-01-01T00:00:00.000Z'),
         updatedAt: new Date('2024-01-01T00:00:00.000Z'),
         startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -1172,7 +1177,7 @@ describe('runWorkflow', () => {
           runId: 'test-run-123',
           workflowName: 'workflow',
           status: 'running',
-          input: dehydrateWorkflowArguments([], ops),
+          input: await dehydrateWorkflowArguments([], ops),
           createdAt: new Date('2024-01-01T00:00:00.000Z'),
           updatedAt: new Date('2024-01-01T00:00:00.000Z'),
           startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -1211,7 +1216,7 @@ describe('runWorkflow', () => {
           runId: 'test-run-123',
           workflowName: 'workflow',
           status: 'running',
-          input: dehydrateWorkflowArguments([], ops),
+          input: await dehydrateWorkflowArguments([], ops),
           createdAt: new Date('2024-01-01T00:00:00.000Z'),
           updatedAt: new Date('2024-01-01T00:00:00.000Z'),
           startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -1246,7 +1251,7 @@ describe('runWorkflow', () => {
         runId: 'test-run-123',
         workflowName: 'workflow',
         status: 'running',
-        input: dehydrateWorkflowArguments([], ops),
+        input: await dehydrateWorkflowArguments([], ops),
         createdAt: new Date('2024-01-01T00:00:00.000Z'),
         updatedAt: new Date('2024-01-01T00:00:00.000Z'),
         startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -1260,7 +1265,7 @@ describe('runWorkflow', () => {
           eventType: 'hook_received',
           correlationId: 'hook_01HK153X008RT6YEW43G8QX6JX',
           eventData: {
-            payload: dehydrateStepReturnValue(
+            payload: await dehydrateStepReturnValue(
               { message: 'Hello from hook' },
               ops
             ),
@@ -1279,7 +1284,7 @@ describe('runWorkflow', () => {
         workflowRun,
         events
       );
-      expect(hydrateWorkflowReturnValue(result as any, ops)).toEqual(
+      expect(await hydrateWorkflowReturnValue(result as any, ops)).toEqual(
         'Hello from hook'
       );
     });
@@ -1290,7 +1295,7 @@ describe('runWorkflow', () => {
         runId: 'test-run-123',
         workflowName: 'workflow',
         status: 'running',
-        input: dehydrateWorkflowArguments([], ops),
+        input: await dehydrateWorkflowArguments([], ops),
         createdAt: new Date('2024-01-01T00:00:00.000Z'),
         updatedAt: new Date('2024-01-01T00:00:00.000Z'),
         startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -1304,7 +1309,7 @@ describe('runWorkflow', () => {
           eventType: 'hook_received',
           correlationId: 'hook_01HK153X008RT6YEW43G8QX6JX',
           eventData: {
-            payload: dehydrateStepReturnValue(
+            payload: await dehydrateStepReturnValue(
               { message: 'First payload' },
               ops
             ),
@@ -1317,7 +1322,7 @@ describe('runWorkflow', () => {
           eventType: 'hook_received',
           correlationId: 'hook_01HK153X008RT6YEW43G8QX6JX',
           eventData: {
-            payload: dehydrateStepReturnValue(
+            payload: await dehydrateStepReturnValue(
               { message: 'Second payload' },
               ops
             ),
@@ -1337,7 +1342,7 @@ describe('runWorkflow', () => {
         workflowRun,
         events
       );
-      expect(hydrateWorkflowReturnValue(result as any, ops)).toEqual([
+      expect(await hydrateWorkflowReturnValue(result as any, ops)).toEqual([
         'First payload',
         'Second payload',
       ]);
@@ -1349,7 +1354,7 @@ describe('runWorkflow', () => {
         runId: 'test-run-123',
         workflowName: 'workflow',
         status: 'running',
-        input: dehydrateWorkflowArguments([], ops),
+        input: await dehydrateWorkflowArguments([], ops),
         createdAt: new Date('2024-01-01T00:00:00.000Z'),
         updatedAt: new Date('2024-01-01T00:00:00.000Z'),
         startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -1363,7 +1368,7 @@ describe('runWorkflow', () => {
           eventType: 'hook_received',
           correlationId: 'hook_01HK153X008RT6YEW43G8QX6JX',
           eventData: {
-            payload: dehydrateStepReturnValue(
+            payload: await dehydrateStepReturnValue(
               { count: 1, status: 'active' },
               ops
             ),
@@ -1376,7 +1381,7 @@ describe('runWorkflow', () => {
           eventType: 'hook_received',
           correlationId: 'hook_01HK153X008RT6YEW43G8QX6JX',
           eventData: {
-            payload: dehydrateStepReturnValue(
+            payload: await dehydrateStepReturnValue(
               { count: 2, status: 'complete' },
               ops
             ),
@@ -1401,7 +1406,7 @@ describe('runWorkflow', () => {
         workflowRun,
         events
       );
-      expect(hydrateWorkflowReturnValue(result as any, ops)).toEqual([
+      expect(await hydrateWorkflowReturnValue(result as any, ops)).toEqual([
         { count: 1, status: 'active' },
         { count: 2, status: 'complete' },
       ]);
@@ -1413,7 +1418,7 @@ describe('runWorkflow', () => {
         runId: 'test-run-123',
         workflowName: 'workflow',
         status: 'running',
-        input: dehydrateWorkflowArguments([], ops),
+        input: await dehydrateWorkflowArguments([], ops),
         createdAt: new Date('2024-01-01T00:00:00.000Z'),
         updatedAt: new Date('2024-01-01T00:00:00.000Z'),
         startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -1427,7 +1432,7 @@ describe('runWorkflow', () => {
           eventType: 'hook_received',
           correlationId: 'hook_01HK153X008RT6YEW43G8QX6JX',
           eventData: {
-            payload: dehydrateStepReturnValue({ value: 100 }, ops),
+            payload: await dehydrateStepReturnValue({ value: 100 }, ops),
           },
           createdAt: new Date(),
         },
@@ -1437,7 +1442,7 @@ describe('runWorkflow', () => {
           eventType: 'hook_received',
           correlationId: 'hook_01HK153X008RT6YEW43G8QX6JX',
           eventData: {
-            payload: dehydrateStepReturnValue({ value: 200 }, ops),
+            payload: await dehydrateStepReturnValue({ value: 200 }, ops),
           },
           createdAt: new Date(),
         },
@@ -1453,7 +1458,7 @@ describe('runWorkflow', () => {
         workflowRun,
         events
       );
-      expect(hydrateWorkflowReturnValue(result as any, ops)).toEqual(100);
+      expect(await hydrateWorkflowReturnValue(result as any, ops)).toEqual(100);
     });
 
     it('should support multiple queued "hook_received" events with step events in between', async () => {
@@ -1462,7 +1467,7 @@ describe('runWorkflow', () => {
         runId: 'test-run-123',
         workflowName: 'workflow',
         status: 'running',
-        input: dehydrateWorkflowArguments([], ops),
+        input: await dehydrateWorkflowArguments([], ops),
         createdAt: new Date('2024-01-01T00:00:00.000Z'),
         updatedAt: new Date('2024-01-01T00:00:00.000Z'),
         startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -1476,7 +1481,7 @@ describe('runWorkflow', () => {
           eventType: 'hook_received',
           correlationId: 'hook_01HK153X008RT6YEW43G8QX6JX',
           eventData: {
-            payload: dehydrateStepReturnValue({ data: 'first' }, ops),
+            payload: await dehydrateStepReturnValue({ data: 'first' }, ops),
           },
           createdAt: new Date('2024-01-01T00:00:01.000Z'),
         },
@@ -1486,7 +1491,7 @@ describe('runWorkflow', () => {
           eventType: 'hook_received',
           correlationId: 'hook_01HK153X008RT6YEW43G8QX6JX',
           eventData: {
-            payload: dehydrateStepReturnValue({ data: 'second' }, ops),
+            payload: await dehydrateStepReturnValue({ data: 'second' }, ops),
           },
           createdAt: new Date('2024-01-01T00:00:02.000Z'),
         },
@@ -1503,7 +1508,7 @@ describe('runWorkflow', () => {
           eventType: 'step_completed',
           correlationId: 'step_01HK153X008RT6YEW43G8QX6JY',
           eventData: {
-            result: dehydrateStepReturnValue(42, ops),
+            result: await dehydrateStepReturnValue(42, ops),
           },
           createdAt: new Date('2024-01-01T00:00:04.000Z'),
         },
@@ -1526,7 +1531,7 @@ describe('runWorkflow', () => {
         workflowRun,
         events
       );
-      expect(hydrateWorkflowReturnValue(result as any, ops)).toEqual({
+      expect(await hydrateWorkflowReturnValue(result as any, ops)).toEqual({
         data1: 'first',
         stepResult: 42,
         data2: 'second',
@@ -1539,7 +1544,7 @@ describe('runWorkflow', () => {
         runId: 'test-run-123',
         workflowName: 'workflow',
         status: 'running',
-        input: dehydrateWorkflowArguments([], ops),
+        input: await dehydrateWorkflowArguments([], ops),
         createdAt: new Date('2024-01-01T00:00:00.000Z'),
         updatedAt: new Date('2024-01-01T00:00:00.000Z'),
         startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -1553,7 +1558,7 @@ describe('runWorkflow', () => {
           eventType: 'hook_received',
           correlationId: 'hook_01HK153X008RT6YEW43G8QX6JX',
           eventData: {
-            payload: dehydrateStepReturnValue({ iteration: 1 }, ops),
+            payload: await dehydrateStepReturnValue({ iteration: 1 }, ops),
           },
           createdAt: new Date('2024-01-01T00:00:01.000Z'),
         },
@@ -1570,7 +1575,7 @@ describe('runWorkflow', () => {
           eventType: 'step_completed',
           correlationId: 'step_01HK153X008RT6YEW43G8QX6JY',
           eventData: {
-            result: dehydrateStepReturnValue(10, ops),
+            result: await dehydrateStepReturnValue(10, ops),
           },
           createdAt: new Date('2024-01-01T00:00:03.000Z'),
         },
@@ -1606,7 +1611,7 @@ describe('runWorkflow', () => {
         runId: 'test-run-123',
         workflowName: 'workflow',
         status: 'running',
-        input: dehydrateWorkflowArguments([], ops),
+        input: await dehydrateWorkflowArguments([], ops),
         createdAt: new Date('2024-01-01T00:00:00.000Z'),
         updatedAt: new Date('2024-01-01T00:00:00.000Z'),
         startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -1620,7 +1625,7 @@ describe('runWorkflow', () => {
           eventType: 'hook_received',
           correlationId: 'hook_01HK153X008RT6YEW43G8QX6JX',
           eventData: {
-            payload: dehydrateStepReturnValue({ result: 'success' }, ops),
+            payload: await dehydrateStepReturnValue({ result: 'success' }, ops),
           },
           createdAt: new Date(),
         },
@@ -1636,7 +1641,7 @@ describe('runWorkflow', () => {
         workflowRun,
         events
       );
-      expect(hydrateWorkflowReturnValue(result as any, ops)).toEqual({
+      expect(await hydrateWorkflowReturnValue(result as any, ops)).toEqual({
         token: 'my-custom-token',
         result: 'success',
       });
@@ -1648,7 +1653,7 @@ describe('runWorkflow', () => {
         runId: 'test-run-123',
         workflowName: 'workflow',
         status: 'running',
-        input: dehydrateWorkflowArguments([], ops),
+        input: await dehydrateWorkflowArguments([], ops),
         createdAt: new Date('2024-01-01T00:00:00.000Z'),
         updatedAt: new Date('2024-01-01T00:00:00.000Z'),
         startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -1695,7 +1700,7 @@ describe('runWorkflow', () => {
         runId: 'test-run-123',
         workflowName: 'workflow',
         status: 'running',
-        input: dehydrateWorkflowArguments([], ops),
+        input: await dehydrateWorkflowArguments([], ops),
         createdAt: new Date('2024-01-01T00:00:00.000Z'),
         updatedAt: new Date('2024-01-01T00:00:00.000Z'),
         startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -1747,7 +1752,7 @@ describe('runWorkflow', () => {
         runId: 'test-run-123',
         workflowName: 'workflow',
         status: 'running',
-        input: dehydrateWorkflowArguments([], ops),
+        input: await dehydrateWorkflowArguments([], ops),
         createdAt: new Date('2024-01-01T00:00:00.000Z'),
         updatedAt: new Date('2024-01-01T00:00:00.000Z'),
         startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -1763,7 +1768,7 @@ describe('runWorkflow', () => {
         workflowRun,
         events
       );
-      const res = hydrateWorkflowReturnValue(result as any, ops);
+      const res = await hydrateWorkflowReturnValue(result as any, ops);
       expect(res).toBeInstanceOf(Response);
       expect(res.status).toEqual(201);
       expect(res.body).toBeInstanceOf(ReadableStream);
@@ -1779,7 +1784,7 @@ describe('runWorkflow', () => {
         runId: 'test-run-123',
         workflowName: 'workflow',
         status: 'running',
-        input: dehydrateWorkflowArguments([], ops),
+        input: await dehydrateWorkflowArguments([], ops),
         createdAt: new Date('2024-01-01T00:00:00.000Z'),
         updatedAt: new Date('2024-01-01T00:00:00.000Z'),
         startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -1795,7 +1800,7 @@ describe('runWorkflow', () => {
         workflowRun,
         events
       );
-      const res = hydrateWorkflowReturnValue(result as any, ops);
+      const res = await hydrateWorkflowReturnValue(result as any, ops);
       expect(res).toBeInstanceOf(Response);
       expect(res.status).toEqual(201);
       expect(res.headers.get('content-type')).toEqual('application/json');
@@ -1811,7 +1816,7 @@ describe('runWorkflow', () => {
         runId: 'test-run-123',
         workflowName: 'workflow',
         status: 'running',
-        input: dehydrateWorkflowArguments([], ops),
+        input: await dehydrateWorkflowArguments([], ops),
         createdAt: new Date('2024-01-01T00:00:00.000Z'),
         updatedAt: new Date('2024-01-01T00:00:00.000Z'),
         startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -1830,7 +1835,7 @@ describe('runWorkflow', () => {
         workflowRun,
         events
       );
-      const res = hydrateWorkflowReturnValue(result as any, ops);
+      const res = await hydrateWorkflowReturnValue(result as any, ops);
       expect(res).toBeInstanceOf(Response);
       expect(res.status).toEqual(202);
       expect(res.headers.get('X-Custom-Header')).toEqual('custom-value');
@@ -1843,7 +1848,7 @@ describe('runWorkflow', () => {
         runId: 'test-run-123',
         workflowName: 'workflow',
         status: 'running',
-        input: dehydrateWorkflowArguments([], ops),
+        input: await dehydrateWorkflowArguments([], ops),
         createdAt: new Date('2024-01-01T00:00:00.000Z'),
         updatedAt: new Date('2024-01-01T00:00:00.000Z'),
         startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -1859,7 +1864,7 @@ describe('runWorkflow', () => {
         workflowRun,
         events
       );
-      const res = hydrateWorkflowReturnValue(result as any, ops);
+      const res = await hydrateWorkflowReturnValue(result as any, ops);
       expect(res).toBeInstanceOf(Response);
       expect(res.status).toEqual(204);
       expect(res.body).toBeNull();
@@ -1871,7 +1876,7 @@ describe('runWorkflow', () => {
         runId: 'test-run-123',
         workflowName: 'workflow',
         status: 'running',
-        input: dehydrateWorkflowArguments([], ops),
+        input: await dehydrateWorkflowArguments([], ops),
         createdAt: new Date('2024-01-01T00:00:00.000Z'),
         updatedAt: new Date('2024-01-01T00:00:00.000Z'),
         startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -1888,7 +1893,7 @@ describe('runWorkflow', () => {
         workflowRun,
         events
       );
-      const res = hydrateWorkflowReturnValue(result as any, ops);
+      const res = await hydrateWorkflowReturnValue(result as any, ops);
       expect(res).toBeInstanceOf(Response);
       expect(res.status).toEqual(200);
       expect(res.body).toBeInstanceOf(ReadableStream);
@@ -1904,7 +1909,7 @@ describe('runWorkflow', () => {
         runId: 'test-run-123',
         workflowName: 'workflow',
         status: 'running',
-        input: dehydrateWorkflowArguments([], ops),
+        input: await dehydrateWorkflowArguments([], ops),
         createdAt: new Date('2024-01-01T00:00:00.000Z'),
         updatedAt: new Date('2024-01-01T00:00:00.000Z'),
         startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -1933,7 +1938,7 @@ describe('runWorkflow', () => {
           runId: 'test-run-123',
           workflowName: 'workflow',
           status: 'running',
-          input: dehydrateWorkflowArguments([], ops),
+          input: await dehydrateWorkflowArguments([], ops),
           createdAt: new Date('2024-01-01T00:00:00.000Z'),
           updatedAt: new Date('2024-01-01T00:00:00.000Z'),
           startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -1949,7 +1954,7 @@ describe('runWorkflow', () => {
           workflowRun,
           events
         );
-        const res = hydrateWorkflowReturnValue(result as any, ops);
+        const res = await hydrateWorkflowReturnValue(result as any, ops);
         expect(res).toBeInstanceOf(Response);
         expect(res.status).toEqual(302);
         expect(res.headers.get('Location')).toEqual(
@@ -1964,7 +1969,7 @@ describe('runWorkflow', () => {
           runId: 'test-run-123',
           workflowName: 'workflow',
           status: 'running',
-          input: dehydrateWorkflowArguments([], ops),
+          input: await dehydrateWorkflowArguments([], ops),
           createdAt: new Date('2024-01-01T00:00:00.000Z'),
           updatedAt: new Date('2024-01-01T00:00:00.000Z'),
           startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -1980,7 +1985,7 @@ describe('runWorkflow', () => {
           workflowRun,
           events
         );
-        const res = hydrateWorkflowReturnValue(result as any, ops);
+        const res = await hydrateWorkflowReturnValue(result as any, ops);
         expect(res).toBeInstanceOf(Response);
         expect(res.status).toEqual(301);
         expect(res.headers.get('Location')).toEqual(
@@ -1994,7 +1999,7 @@ describe('runWorkflow', () => {
           runId: 'test-run-123',
           workflowName: 'workflow',
           status: 'running',
-          input: dehydrateWorkflowArguments([], ops),
+          input: await dehydrateWorkflowArguments([], ops),
           createdAt: new Date('2024-01-01T00:00:00.000Z'),
           updatedAt: new Date('2024-01-01T00:00:00.000Z'),
           startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -2012,7 +2017,7 @@ describe('runWorkflow', () => {
           workflowRun,
           events
         );
-        const statuses = hydrateWorkflowReturnValue(result as any, ops);
+        const statuses = await hydrateWorkflowReturnValue(result as any, ops);
         expect(statuses).toEqual([301, 302, 303, 307, 308]);
       });
 
@@ -2022,7 +2027,7 @@ describe('runWorkflow', () => {
           runId: 'test-run-123',
           workflowName: 'workflow',
           status: 'running',
-          input: dehydrateWorkflowArguments([], ops),
+          input: await dehydrateWorkflowArguments([], ops),
           createdAt: new Date('2024-01-01T00:00:00.000Z'),
           updatedAt: new Date('2024-01-01T00:00:00.000Z'),
           startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -2053,7 +2058,7 @@ describe('runWorkflow', () => {
         runId: 'test-run-123',
         workflowName: 'workflow',
         status: 'running',
-        input: dehydrateWorkflowArguments([], ops),
+        input: await dehydrateWorkflowArguments([], ops),
         createdAt: new Date('2024-01-01T00:00:00.000Z'),
         updatedAt: new Date('2024-01-01T00:00:00.000Z'),
         startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -2069,7 +2074,7 @@ describe('runWorkflow', () => {
         workflowRun,
         events
       );
-      const req = hydrateWorkflowReturnValue(result as any, ops);
+      const req = await hydrateWorkflowReturnValue(result as any, ops);
       expect(req).toBeInstanceOf(Request);
       expect(req.method).toEqual('GET');
       expect(req.url).toEqual('https://example.com/api');
@@ -2082,7 +2087,7 @@ describe('runWorkflow', () => {
         runId: 'test-run-123',
         workflowName: 'workflow',
         status: 'running',
-        input: dehydrateWorkflowArguments([], ops),
+        input: await dehydrateWorkflowArguments([], ops),
         createdAt: new Date('2024-01-01T00:00:00.000Z'),
         updatedAt: new Date('2024-01-01T00:00:00.000Z'),
         startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -2101,7 +2106,7 @@ describe('runWorkflow', () => {
         workflowRun,
         events
       );
-      const req = hydrateWorkflowReturnValue(result as any, ops);
+      const req = await hydrateWorkflowReturnValue(result as any, ops);
       expect(req).toBeInstanceOf(Request);
       expect(req.method).toEqual('POST');
       expect(req.url).toEqual('https://example.com/api');
@@ -2118,7 +2123,7 @@ describe('runWorkflow', () => {
         runId: 'test-run-123',
         workflowName: 'workflow',
         status: 'running',
-        input: dehydrateWorkflowArguments([], ops),
+        input: await dehydrateWorkflowArguments([], ops),
         createdAt: new Date('2024-01-01T00:00:00.000Z'),
         updatedAt: new Date('2024-01-01T00:00:00.000Z'),
         startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -2141,7 +2146,7 @@ describe('runWorkflow', () => {
         workflowRun,
         events
       );
-      const req = hydrateWorkflowReturnValue(result as any, ops);
+      const req = await hydrateWorkflowReturnValue(result as any, ops);
       expect(req).toBeInstanceOf(Request);
       expect(req.headers.get('Content-Type')).toEqual('application/json');
       expect(req.headers.get('X-Custom-Header')).toEqual('custom-value');
@@ -2153,7 +2158,7 @@ describe('runWorkflow', () => {
         runId: 'test-run-123',
         workflowName: 'workflow',
         status: 'running',
-        input: dehydrateWorkflowArguments([], ops),
+        input: await dehydrateWorkflowArguments([], ops),
         createdAt: new Date('2024-01-01T00:00:00.000Z'),
         updatedAt: new Date('2024-01-01T00:00:00.000Z'),
         startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -2173,7 +2178,7 @@ describe('runWorkflow', () => {
         workflowRun,
         events
       );
-      const req = hydrateWorkflowReturnValue(result as any, ops);
+      const req = await hydrateWorkflowReturnValue(result as any, ops);
       expect(req).toBeInstanceOf(Request);
       expect(req.method).toEqual('PUT');
       expect(req.body).toBeInstanceOf(ReadableStream);
@@ -2189,7 +2194,7 @@ describe('runWorkflow', () => {
         runId: 'test-run-123',
         workflowName: 'workflow',
         status: 'running',
-        input: dehydrateWorkflowArguments([], ops),
+        input: await dehydrateWorkflowArguments([], ops),
         createdAt: new Date('2024-01-01T00:00:00.000Z'),
         updatedAt: new Date('2024-01-01T00:00:00.000Z'),
         startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -2218,7 +2223,7 @@ describe('runWorkflow', () => {
         runId: 'test-run-123',
         workflowName: 'workflow',
         status: 'running',
-        input: dehydrateWorkflowArguments([], ops),
+        input: await dehydrateWorkflowArguments([], ops),
         createdAt: new Date('2024-01-01T00:00:00.000Z'),
         updatedAt: new Date('2024-01-01T00:00:00.000Z'),
         startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -2247,7 +2252,7 @@ describe('runWorkflow', () => {
         runId: 'test-run-123',
         workflowName: 'workflow',
         status: 'running',
-        input: dehydrateWorkflowArguments([], ops),
+        input: await dehydrateWorkflowArguments([], ops),
         createdAt: new Date('2024-01-01T00:00:00.000Z'),
         updatedAt: new Date('2024-01-01T00:00:00.000Z'),
         startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -2273,7 +2278,7 @@ describe('runWorkflow', () => {
         runId: 'test-clone-bug-123',
         workflowName: 'workflow',
         status: 'running',
-        input: dehydrateWorkflowArguments([], ops),
+        input: await dehydrateWorkflowArguments([], ops),
         createdAt: new Date('2024-01-01T00:00:00.000Z'),
         updatedAt: new Date('2024-01-01T00:00:00.000Z'),
         startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -2309,7 +2314,7 @@ describe('runWorkflow', () => {
         events
       );
 
-      const result_obj = hydrateWorkflowReturnValue(result as any, ops);
+      const result_obj = await hydrateWorkflowReturnValue(result as any, ops);
 
       // According to MDN, the req1 properties should be inherited
       // and only the method should be overridden by the init options
@@ -2330,7 +2335,7 @@ describe('runWorkflow', () => {
         runId: workflowRunId,
         workflowName: 'workflow',
         status: 'running',
-        input: dehydrateWorkflowArguments([], ops),
+        input: await dehydrateWorkflowArguments([], ops),
         createdAt: new Date('2024-01-01T00:00:00.000Z'),
         updatedAt: new Date('2024-01-01T00:00:00.000Z'),
         startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -2367,7 +2372,7 @@ describe('runWorkflow', () => {
         workflowRun,
         events
       );
-      expect(hydrateWorkflowReturnValue(result as any, ops)).toEqual(
+      expect(await hydrateWorkflowReturnValue(result as any, ops)).toEqual(
         'sleep completed'
       );
     });
@@ -2381,7 +2386,7 @@ describe('runWorkflow', () => {
           runId: workflowRunId,
           workflowName: 'workflow',
           status: 'running',
-          input: dehydrateWorkflowArguments([], ops),
+          input: await dehydrateWorkflowArguments([], ops),
           createdAt: new Date('2024-01-01T00:00:00.000Z'),
           updatedAt: new Date('2024-01-01T00:00:00.000Z'),
           startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -2416,7 +2421,7 @@ describe('runWorkflow', () => {
         runId: workflowRunId,
         workflowName: 'workflow',
         status: 'running',
-        input: dehydrateWorkflowArguments([], ops),
+        input: await dehydrateWorkflowArguments([], ops),
         createdAt: new Date('2024-01-01T00:00:00.000Z'),
         updatedAt: new Date('2024-01-01T00:00:00.000Z'),
         startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -2469,7 +2474,7 @@ describe('runWorkflow', () => {
         workflowRun,
         events
       );
-      expect(hydrateWorkflowReturnValue(result as any, ops)).toEqual(
+      expect(await hydrateWorkflowReturnValue(result as any, ops)).toEqual(
         'all sleeps completed'
       );
     });
@@ -2483,7 +2488,7 @@ describe('runWorkflow', () => {
           runId: workflowRunId,
           workflowName: 'workflow',
           status: 'running',
-          input: dehydrateWorkflowArguments([], ops),
+          input: await dehydrateWorkflowArguments([], ops),
           createdAt: new Date('2024-01-01T00:00:00.000Z'),
           updatedAt: new Date('2024-01-01T00:00:00.000Z'),
           startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -2545,7 +2550,7 @@ describe('runWorkflow', () => {
         runId: workflowRunId,
         workflowName: 'workflow',
         status: 'running',
-        input: dehydrateWorkflowArguments([], ops),
+        input: await dehydrateWorkflowArguments([], ops),
         createdAt: new Date('2024-01-01T00:00:00.000Z'),
         updatedAt: new Date('2024-01-01T00:00:00.000Z'),
         startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -2566,7 +2571,7 @@ describe('runWorkflow', () => {
           eventType: 'step_completed',
           correlationId: 'step_01HK153X008RT6YEW43G8QX6JX',
           eventData: {
-            result: dehydrateStepReturnValue(42, ops),
+            result: await dehydrateStepReturnValue(42, ops),
           },
           createdAt: new Date('2024-01-01T00:00:01.000Z'),
         },
@@ -2600,7 +2605,7 @@ describe('runWorkflow', () => {
         workflowRun,
         events
       );
-      expect(hydrateWorkflowReturnValue(result as any, ops)).toEqual({
+      expect(await hydrateWorkflowReturnValue(result as any, ops)).toEqual({
         step: 42,
         slept: true,
       });
@@ -2614,7 +2619,7 @@ describe('runWorkflow', () => {
         runId: workflowRunId,
         workflowName: 'workflow',
         status: 'running',
-        input: dehydrateWorkflowArguments([], ops),
+        input: await dehydrateWorkflowArguments([], ops),
         createdAt: new Date('2024-01-01T00:00:00.000Z'),
         updatedAt: new Date('2024-01-01T00:00:00.000Z'),
         startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -2651,7 +2656,7 @@ describe('runWorkflow', () => {
         workflowRun,
         events
       );
-      expect(hydrateWorkflowReturnValue(result as any, ops)).toEqual(
+      expect(await hydrateWorkflowReturnValue(result as any, ops)).toEqual(
         'sleep with date completed'
       );
     });
@@ -2666,7 +2671,7 @@ describe('runWorkflow', () => {
           runId: 'test-run-123',
           workflowName: 'workflow',
           status: 'running',
-          input: dehydrateWorkflowArguments([], ops),
+          input: await dehydrateWorkflowArguments([], ops),
           createdAt: new Date('2024-01-01T00:00:00.000Z'),
           updatedAt: new Date('2024-01-01T00:00:00.000Z'),
           startedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -2713,7 +2718,7 @@ describe('runWorkflow', () => {
           runId: 'test-run-123',
           workflowName: 'workflow',
           status: 'running',
-          input: dehydrateWorkflowArguments([], ops),
+          input: await dehydrateWorkflowArguments([], ops),
           createdAt: new Date('2024-01-01T00:00:00.000Z'),
           updatedAt: new Date('2024-01-01T00:00:00.000Z'),
           startedAt: new Date('2024-01-01T00:00:00.000Z'),

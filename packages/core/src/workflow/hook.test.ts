@@ -40,7 +40,7 @@ describe('createCreateHook', () => {
         eventType: 'hook_received',
         correlationId: 'hook_01K11TFZ62YS0YYFDQ3E8B9YCV',
         eventData: {
-          payload: dehydrateStepReturnValue({ message: 'hello' }, ops),
+          payload: await dehydrateStepReturnValue({ message: 'hello' }, ops),
         },
         createdAt: new Date(),
       },
@@ -125,7 +125,7 @@ describe('createCreateHook', () => {
         eventType: 'hook_received',
         correlationId: 'hook_01K11TFZ62YS0YYFDQ3E8B9YCV',
         eventData: {
-          payload: dehydrateStepReturnValue({ data: 'test' }, ops),
+          payload: await dehydrateStepReturnValue({ data: 'test' }, ops),
         },
         createdAt: new Date(),
       },
@@ -189,7 +189,7 @@ describe('createCreateHook', () => {
         eventType: 'hook_received',
         correlationId: 'hook_01K11TFZ62YS0YYFDQ3E8B9YCV',
         eventData: {
-          payload: dehydrateStepReturnValue({ message: 'first' }, ops),
+          payload: await dehydrateStepReturnValue({ message: 'first' }, ops),
         },
         createdAt: new Date(),
       },
@@ -199,7 +199,7 @@ describe('createCreateHook', () => {
         eventType: 'hook_received',
         correlationId: 'hook_01K11TFZ62YS0YYFDQ3E8B9YCV',
         eventData: {
-          payload: dehydrateStepReturnValue({ message: 'second' }, ops),
+          payload: await dehydrateStepReturnValue({ message: 'second' }, ops),
         },
         createdAt: new Date(),
       },

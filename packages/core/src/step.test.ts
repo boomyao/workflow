@@ -39,7 +39,7 @@ describe('createUseStep', () => {
         eventType: 'step_completed',
         correlationId: 'step_01K11TFZ62YS0YYFDQ3E8B9YCV',
         eventData: {
-          result: dehydrateStepReturnValue(3),
+          result: await dehydrateStepReturnValue(3),
         },
         createdAt: new Date(),
       },
@@ -190,7 +190,7 @@ describe('createUseStep', () => {
         eventType: 'step_completed',
         correlationId: 'step_01K11TFZ62YS0YYFDQ3E8B9YCV',
         eventData: {
-          result: dehydrateStepReturnValue(undefined),
+          result: await dehydrateStepReturnValue(undefined),
         },
         createdAt: new Date(),
       },
@@ -409,7 +409,7 @@ describe('createUseStep', () => {
         eventType: 'step_completed',
         correlationId: 'step_01K11TFZ62YS0YYFDQ3E8B9YCV',
         eventData: {
-          result: dehydrateStepReturnValue(42),
+          result: await dehydrateStepReturnValue(42),
         },
         createdAt: new Date(),
       },

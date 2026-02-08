@@ -332,10 +332,10 @@ describe('hydrateResourceIO with custom class instances', () => {
   (TestPoint as any).classId = 'test//TestPoint';
   registerSerializationClass('test//TestPoint', TestPoint);
 
-  it('should convert Instance type to ClassInstanceRef in step output', () => {
+  it('should convert Instance type to ClassInstanceRef in step output', async () => {
     // Simulate serialized step data with a custom class instance
     const point = new TestPoint(3, 4);
-    const serialized = dehydrateStepReturnValue(point, [], 'wrun_test');
+    const serialized = await dehydrateStepReturnValue(point, [], 'wrun_test');
 
     // Create a step resource with serialized output
     const step = {
@@ -346,7 +346,7 @@ describe('hydrateResourceIO with custom class instances', () => {
 
     // Hydrate the step - this should convert Instance to ClassInstanceRef
     // because the class is not registered in the o11y context (streamPrintRevivers)
-    const hydrated = hydrateResourceIO(step);
+    const hydrated = await hydrateResourceIO(step);
 
     // The output should be a ClassInstanceRef
     expect(isClassInstanceRef(hydrated.output)).toBe(true);

@@ -254,17 +254,17 @@ const hydrateLegacyData = (data: any[]): unknown => {
   return unflatten(data, getObservabilityRevivers());
 };
 
-const hydrateStepIO = <
+const hydrateStepIO = async <
   T extends { stepId?: string; input?: any; output?: any; runId?: string },
 >(
   step: T
-): T => {
+): Promise<T> => {
   let hydratedInput = step.input;
   let hydratedOutput = step.output;
 
   // Hydrate input - handle both binary (specVersion 2) and legacy (specVersion 1) formats
   if (isBinaryFormat(step.input) && step.input.byteLength > 0) {
-    hydratedInput = hydrateStepArguments(
+    hydratedInput = await hydrateStepArguments(
       step.input,
       [],
       step.runId as string,
@@ -277,7 +277,7 @@ const hydrateStepIO = <
 
   // Hydrate output - handle both binary (specVersion 2) and legacy (specVersion 1) formats
   if (isBinaryFormat(step.output)) {
-    hydratedOutput = hydrateStepReturnValue(
+    hydratedOutput = await hydrateStepReturnValue(
       step.output,
       globalThis,
       streamPrintRevivers
@@ -293,17 +293,17 @@ const hydrateStepIO = <
   };
 };
 
-const hydrateWorkflowIO = <
+const hydrateWorkflowIO = async <
   T extends { runId?: string; input?: any; output?: any },
 >(
   workflow: T
-): T => {
+): Promise<T> => {
   let hydratedInput = workflow.input;
   let hydratedOutput = workflow.output;
 
   // Hydrate input - handle both binary (specVersion 2) and legacy (specVersion 1) formats
   if (isBinaryFormat(workflow.input) && workflow.input.byteLength > 0) {
-    hydratedInput = hydrateWorkflowArguments(
+    hydratedInput = await hydrateWorkflowArguments(
       workflow.input,
       globalThis,
       streamPrintRevivers
@@ -314,7 +314,7 @@ const hydrateWorkflowIO = <
 
   // Hydrate output - handle both binary (specVersion 2) and legacy (specVersion 1) formats
   if (isBinaryFormat(workflow.output)) {
-    hydratedOutput = hydrateWorkflowReturnValue(
+    hydratedOutput = await hydrateWorkflowReturnValue(
       workflow.output,
       [],
       workflow.runId as string,
@@ -332,11 +332,11 @@ const hydrateWorkflowIO = <
   };
 };
 
-const hydrateEventData = <
+const hydrateEventData = async <
   T extends { eventId?: string; eventData?: any; runId?: string },
 >(
   event: T
-): T => {
+): Promise<T> => {
   if (!event.eventData) {
     return event;
   }
@@ -348,7 +348,7 @@ const hydrateEventData = <
     if ('result' in eventData && typeof eventData.result === 'object') {
       // Handle both binary (specVersion 2) and legacy (specVersion 1) formats
       if (isBinaryFormat(eventData.result)) {
-        eventData.result = hydrateStepReturnValue(
+        eventData.result = await hydrateStepReturnValue(
           eventData.result,
           globalThis,
           streamPrintRevivers
@@ -369,15 +369,17 @@ const hydrateEventData = <
   };
 };
 
-const hydrateHookMetadata = <T extends { hookId?: string; metadata?: any }>(
+const hydrateHookMetadata = async <
+  T extends { hookId?: string; metadata?: any },
+>(
   hook: T
-): T => {
+): Promise<T> => {
   let hydratedMetadata = hook.metadata;
 
   if (hook.metadata && 'runId' in hook) {
     // Handle both binary (specVersion 2) and legacy (specVersion 1) formats
     if (isBinaryFormat(hook.metadata)) {
-      hydratedMetadata = hydrateStepArguments(
+      hydratedMetadata = await hydrateStepArguments(
         hook.metadata,
         [],
         hook.runId as string,
@@ -395,7 +397,7 @@ const hydrateHookMetadata = <T extends { hookId?: string; metadata?: any }>(
   };
 };
 
-export const hydrateResourceIO = <
+export const hydrateResourceIO = async <
   T extends {
     stepId?: string;
     hookId?: string;
@@ -408,19 +410,19 @@ export const hydrateResourceIO = <
   },
 >(
   resource: T
-): T => {
+): Promise<T> => {
   if (!resource) {
     return resource;
   }
   let hydrated: T;
   if ('stepId' in resource) {
-    hydrated = hydrateStepIO(resource);
+    hydrated = await hydrateStepIO(resource);
   } else if ('hookId' in resource) {
-    hydrated = hydrateHookMetadata(resource);
+    hydrated = await hydrateHookMetadata(resource);
   } else if ('eventId' in resource) {
-    hydrated = hydrateEventData(resource);
+    hydrated = await hydrateEventData(resource);
   } else {
-    hydrated = hydrateWorkflowIO(resource);
+    hydrated = await hydrateWorkflowIO(resource);
   }
   if ('executionContext' in hydrated) {
     const { executionContext, ...rest } = hydrated;
