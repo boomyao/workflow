@@ -545,9 +545,9 @@ const toJSONCompatible = <T>(data: T): T => {
   return data;
 };
 
-const hydrate = async <T>(data: T): Promise<T> => {
+const hydrate = async <T>(data: T, world: World): Promise<T> => {
   try {
-    return (await hydrateResourceIO(data as any)) as T;
+    return (await hydrateResourceIO(data as any, world)) as T;
   } catch (error) {
     throw new Error('Failed to hydrate data', { cause: error });
   }
@@ -596,7 +596,7 @@ export async function fetchRuns(
     });
     return createResponse({
       data: await Promise.all(
-        (result.data as unknown as WorkflowRun[]).map(hydrate)
+        (result.data as unknown as WorkflowRun[]).map((r) => hydrate(r, world))
       ),
       cursor: result.cursor ?? undefined,
       hasMore: result.hasMore,
@@ -621,7 +621,7 @@ export async function fetchRun(
   try {
     const world = await getWorldFromEnv(worldEnv);
     const run = await world.runs.get(runId, { resolveData });
-    const hydratedRun = await hydrate(run as WorkflowRun);
+    const hydratedRun = await hydrate(run as WorkflowRun, world);
     return createResponse(hydratedRun);
   } catch (error) {
     return createServerActionError<WorkflowRun>(error, 'world.runs.get', {
@@ -653,7 +653,9 @@ export async function fetchSteps(
     });
     return createResponse({
       // StepWithoutData has undefined input/output, but after hydration the structure is compatible
-      data: await Promise.all((result.data as unknown as Step[]).map(hydrate)),
+      data: await Promise.all(
+        (result.data as unknown as Step[]).map((s) => hydrate(s, world))
+      ),
       cursor: result.cursor ?? undefined,
       hasMore: result.hasMore,
     });
@@ -681,7 +683,7 @@ export async function fetchStep(
   try {
     const world = await getWorldFromEnv(worldEnv);
     const step = await world.steps.get(runId, stepId, { resolveData });
-    const hydratedStep = await hydrate(step as Step);
+    const hydratedStep = await hydrate(step as Step, world);
     return createResponse(hydratedStep);
   } catch (error) {
     return createServerActionError<Step>(error, 'world.steps.get', {
@@ -751,7 +753,7 @@ export async function fetchEventsByCorrelationId(
       resolveData: withData ? 'all' : 'none',
     });
     return createResponse({
-      data: await Promise.all(result.data.map(hydrate)),
+      data: await Promise.all(result.data.map((e) => hydrate(e, world))),
       cursor: result.cursor ?? undefined,
       hasMore: result.hasMore,
     });
@@ -788,7 +790,9 @@ export async function fetchHooks(
       resolveData: 'none',
     });
     return createResponse({
-      data: await Promise.all((result.data as Hook[]).map(hydrate)),
+      data: await Promise.all(
+        (result.data as Hook[]).map((h) => hydrate(h, world))
+      ),
       cursor: result.cursor ?? undefined,
       hasMore: result.hasMore,
     });
@@ -812,7 +816,7 @@ export async function fetchHook(
   try {
     const world = await getWorldFromEnv(worldEnv);
     const hook = await world.hooks.get(hookId, { resolveData });
-    return createResponse(await hydrate(hook as Hook));
+    return createResponse(await hydrate(hook as Hook, world));
   } catch (error) {
     return createServerActionError<Hook>(error, 'world.hooks.get', {
       hookId,

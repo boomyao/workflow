@@ -153,7 +153,11 @@ export class Run<TResult> {
         const run = await this.world.runs.get(this.runId);
 
         if (run.status === 'completed') {
-          return await hydrateWorkflowReturnValue(run.output, [], this.runId);
+          return await hydrateWorkflowReturnValue(
+            run.output,
+            this.runId,
+            this.world
+          );
         }
 
         if (run.status === 'cancelled') {

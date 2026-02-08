@@ -85,6 +85,8 @@ export async function handleSuspension({
           ? undefined
           : ((await dehydrateStepArguments(
               queueItem.metadata,
+              runId,
+              world,
               suspension.globalThis
             )) as SerializedData);
       return {
@@ -161,6 +163,8 @@ export async function handleSuspension({
               closureVars: queueItem.closureVars,
               thisVal: queueItem.thisVal,
             },
+            runId,
+            world,
             suspension.globalThis
           );
           const stepEvent: CreateEventRequest = {

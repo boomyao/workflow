@@ -81,7 +81,12 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse) {
     // Args from body (binary serialized data)
     const buffer = await readRawBody(req);
     if (buffer.byteLength > 0) {
-      args = await hydrateWorkflowArguments(new Uint8Array(buffer), globalThis);
+      args = await hydrateWorkflowArguments(
+        new Uint8Array(buffer),
+        '',
+        {},
+        globalThis
+      );
     } else {
       args = [42];
     }

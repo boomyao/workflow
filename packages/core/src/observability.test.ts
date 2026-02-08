@@ -1,5 +1,6 @@
 import { inspect } from 'node:util';
 import { WORKFLOW_DESERIALIZE, WORKFLOW_SERIALIZE } from '@workflow/serde';
+import type { Encryptor } from '@workflow/world';
 import { describe, expect, it } from 'vitest';
 import { registerSerializationClass } from './class-serialization.js';
 import {
@@ -14,6 +15,8 @@ import {
   truncateId,
 } from './observability.js';
 import { dehydrateStepReturnValue } from './serialization.js';
+
+const mockEncryptor: Encryptor = {};
 
 describe('ClassInstanceRef', () => {
   describe('constructor and properties', () => {
@@ -335,7 +338,12 @@ describe('hydrateResourceIO with custom class instances', () => {
   it('should convert Instance type to ClassInstanceRef in step output', async () => {
     // Simulate serialized step data with a custom class instance
     const point = new TestPoint(3, 4);
-    const serialized = await dehydrateStepReturnValue(point, [], 'wrun_test');
+    const serialized = await dehydrateStepReturnValue(
+      point,
+      'wrun_test',
+      {},
+      []
+    );
 
     // Create a step resource with serialized output
     const step = {
@@ -346,7 +354,7 @@ describe('hydrateResourceIO with custom class instances', () => {
 
     // Hydrate the step - this should convert Instance to ClassInstanceRef
     // because the class is not registered in the o11y context (streamPrintRevivers)
-    const hydrated = await hydrateResourceIO(step);
+    const hydrated = await hydrateResourceIO(step, mockEncryptor);
 
     // The output should be a ClassInstanceRef
     expect(isClassInstanceRef(hydrated.output)).toBe(true);

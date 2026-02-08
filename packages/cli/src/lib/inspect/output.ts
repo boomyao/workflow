@@ -535,7 +535,7 @@ export const listRuns = async (world: World, opts: InspectCLIOptions = {}) => {
         resolveData,
       });
       const runsWithHydratedIO = await Promise.all(
-        runs.data.map(hydrateResourceIO)
+        runs.data.map((r) => hydrateResourceIO(r, world))
       );
       showJson({ ...runs, data: runsWithHydratedIO });
       return;
@@ -574,7 +574,9 @@ export const listRuns = async (world: World, opts: InspectCLIOptions = {}) => {
       }
     },
     displayPage: async (runs) => {
-      const runsWithHydratedIO = await Promise.all(runs.map(hydrateResourceIO));
+      const runsWithHydratedIO = await Promise.all(
+        runs.map((r) => hydrateResourceIO(r, world))
+      );
       logger.log(showTable(runsWithHydratedIO, props, opts));
     },
   });
@@ -590,7 +592,9 @@ export const getRecentRun = async (
       pagination: { limit: 1, sortOrder: opts.sort || 'desc' },
       resolveData: 'none', // Don't need data for just getting the ID
     });
-    runs.data = await Promise.all(runs.data.map(hydrateResourceIO));
+    runs.data = await Promise.all(
+      runs.data.map((r) => hydrateResourceIO(r, world))
+    );
     return runs.data[0];
   } catch (error) {
     if (handleApiError(error, opts.backend)) {
@@ -610,7 +614,7 @@ export const showRun = async (
   }
   try {
     const run = await world.runs.get(runId, { resolveData: 'all' });
-    const runWithHydratedIO = await hydrateResourceIO(run);
+    const runWithHydratedIO = await hydrateResourceIO(run, world);
     if (opts.json) {
       showJson(runWithHydratedIO);
       return;
@@ -714,7 +718,7 @@ export const listSteps = async (
     },
     displayPage: async (steps) => {
       const stepsWithHydratedIO = await Promise.all(
-        steps.map(hydrateResourceIO)
+        steps.map((s) => hydrateResourceIO(s, world))
       );
       logger.log(showTable(stepsWithHydratedIO, props, opts));
       showInspectInfoBox('step');
@@ -739,7 +743,7 @@ export const showStep = async (
     const step = await world.steps.get(opts.runId, stepId, {
       resolveData: 'all',
     });
-    const stepWithHydratedIO = await hydrateResourceIO(step);
+    const stepWithHydratedIO = await hydrateResourceIO(step, world);
     if (opts.json) {
       showJson(stepWithHydratedIO);
       return;
@@ -955,7 +959,7 @@ export const listHooks = async (world: World, opts: InspectCLIOptions = {}) => {
         resolveData,
       });
       const hydratedHooks = await Promise.all(
-        hooks.data.map(hydrateResourceIO)
+        hooks.data.map((h) => hydrateResourceIO(h, world))
       );
       showJson({ ...hooks, data: hydratedHooks });
       return;
@@ -1000,7 +1004,9 @@ export const listHooks = async (world: World, opts: InspectCLIOptions = {}) => {
       }
     },
     displayPage: async (hooks) => {
-      const hydratedHooks = await Promise.all(hooks.map(hydrateResourceIO));
+      const hydratedHooks = await Promise.all(
+        hooks.map((h) => hydrateResourceIO(h, world))
+      );
       logger.log(showTable(hydratedHooks, HOOK_LISTED_PROPS, opts));
       showInspectInfoBox('hook');
     },
@@ -1019,7 +1025,7 @@ export const showHook = async (
     const hook = await world.hooks.get(hookId, {
       resolveData: 'all',
     });
-    const hydratedHook = await hydrateResourceIO(hook);
+    const hydratedHook = await hydrateResourceIO(hook, world);
     if (opts.json) {
       showJson(hydratedHook);
       return;

@@ -5,6 +5,7 @@
 
 import { inspect } from 'node:util';
 import { parseClassName } from '@workflow/utils/parse-name';
+import type { Encryptor } from '@workflow/world';
 import { unflatten } from 'devalue';
 import { runtimeLogger } from './logger.js';
 import {
@@ -257,7 +258,8 @@ const hydrateLegacyData = (data: any[]): unknown => {
 const hydrateStepIO = async <
   T extends { stepId?: string; input?: any; output?: any; runId?: string },
 >(
-  step: T
+  step: T,
+  encryptor: Encryptor
 ): Promise<T> => {
   let hydratedInput = step.input;
   let hydratedOutput = step.output;
@@ -266,8 +268,9 @@ const hydrateStepIO = async <
   if (isBinaryFormat(step.input) && step.input.byteLength > 0) {
     hydratedInput = await hydrateStepArguments(
       step.input,
-      [],
       step.runId as string,
+      encryptor,
+      [],
       globalThis,
       streamPrintRevivers
     );
@@ -279,6 +282,8 @@ const hydrateStepIO = async <
   if (isBinaryFormat(step.output)) {
     hydratedOutput = await hydrateStepReturnValue(
       step.output,
+      step.runId as string,
+      encryptor,
       globalThis,
       streamPrintRevivers
     );
@@ -296,7 +301,8 @@ const hydrateStepIO = async <
 const hydrateWorkflowIO = async <
   T extends { runId?: string; input?: any; output?: any },
 >(
-  workflow: T
+  workflow: T,
+  encryptor: Encryptor
 ): Promise<T> => {
   let hydratedInput = workflow.input;
   let hydratedOutput = workflow.output;
@@ -305,6 +311,8 @@ const hydrateWorkflowIO = async <
   if (isBinaryFormat(workflow.input) && workflow.input.byteLength > 0) {
     hydratedInput = await hydrateWorkflowArguments(
       workflow.input,
+      workflow.runId as string,
+      encryptor,
       globalThis,
       streamPrintRevivers
     );
@@ -316,8 +324,9 @@ const hydrateWorkflowIO = async <
   if (isBinaryFormat(workflow.output)) {
     hydratedOutput = await hydrateWorkflowReturnValue(
       workflow.output,
-      [],
       workflow.runId as string,
+      encryptor,
+      [],
       globalThis,
       streamPrintRevivers
     );
@@ -335,7 +344,8 @@ const hydrateWorkflowIO = async <
 const hydrateEventData = async <
   T extends { eventId?: string; eventData?: any; runId?: string },
 >(
-  event: T
+  event: T,
+  encryptor: Encryptor
 ): Promise<T> => {
   if (!event.eventData) {
     return event;
@@ -350,6 +360,8 @@ const hydrateEventData = async <
       if (isBinaryFormat(eventData.result)) {
         eventData.result = await hydrateStepReturnValue(
           eventData.result,
+          event.runId as string,
+          encryptor,
           globalThis,
           streamPrintRevivers
         );
@@ -372,7 +384,8 @@ const hydrateEventData = async <
 const hydrateHookMetadata = async <
   T extends { hookId?: string; metadata?: any },
 >(
-  hook: T
+  hook: T,
+  encryptor: Encryptor
 ): Promise<T> => {
   let hydratedMetadata = hook.metadata;
 
@@ -381,8 +394,9 @@ const hydrateHookMetadata = async <
     if (isBinaryFormat(hook.metadata)) {
       hydratedMetadata = await hydrateStepArguments(
         hook.metadata,
-        [],
         hook.runId as string,
+        encryptor,
+        [],
         globalThis,
         streamPrintRevivers
       );
@@ -409,20 +423,21 @@ export const hydrateResourceIO = async <
     executionContext?: any;
   },
 >(
-  resource: T
+  resource: T,
+  encryptor: Encryptor
 ): Promise<T> => {
   if (!resource) {
     return resource;
   }
   let hydrated: T;
   if ('stepId' in resource) {
-    hydrated = await hydrateStepIO(resource);
+    hydrated = await hydrateStepIO(resource, encryptor);
   } else if ('hookId' in resource) {
-    hydrated = await hydrateHookMetadata(resource);
+    hydrated = await hydrateHookMetadata(resource, encryptor);
   } else if ('eventId' in resource) {
-    hydrated = await hydrateEventData(resource);
+    hydrated = await hydrateEventData(resource, encryptor);
   } else {
-    hydrated = await hydrateWorkflowIO(resource);
+    hydrated = await hydrateWorkflowIO(resource, encryptor);
   }
   if ('executionContext' in hydrated) {
     const { executionContext, ...rest } = hydrated;

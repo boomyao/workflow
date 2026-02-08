@@ -50,11 +50,11 @@ export {
 export {
   cancelRun,
   listStreams,
+  type ReadStreamOptions,
+  type RecreateRunOptions,
   readStream,
   recreateRunFromExisting,
   reenqueueRun,
-  type ReadStreamOptions,
-  type RecreateRunOptions,
   type StopSleepOptions,
   type StopSleepResult,
   wakeUpRun,
@@ -229,7 +229,8 @@ export function workflowEntrypoint(
                       return await runWorkflow(
                         workflowCode,
                         workflowRun,
-                        events
+                        events,
+                        world
                       );
                     }
                   );

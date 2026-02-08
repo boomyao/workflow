@@ -2,6 +2,7 @@
  * Utils used by the bundler when transforming code
  */
 
+import type { Encryptor } from '@workflow/world';
 import type { EventsConsumer } from './events-consumer.js';
 import type { QueueItem } from './global.js';
 import type { Serializable } from './schemas.js';
@@ -39,6 +40,8 @@ export function getStepFunction(stepId: string): StepFunction | undefined {
 export { __private_getClosureVars } from './step/get-closure-vars.js';
 
 export interface WorkflowOrchestratorContext {
+  runId: string;
+  encryptor: Encryptor;
   globalThis: typeof globalThis;
   eventsConsumer: EventsConsumer;
   /**

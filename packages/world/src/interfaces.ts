@@ -169,12 +169,65 @@ export interface Storage {
 }
 
 /**
+ * Context passed to encryption/decryption operations.
+ */
+export interface EncryptionContext {
+  /** The workflow run ID, used for per-run key derivation */
+  runId: string;
+}
+
+/**
+ * Key material for external decryption (e.g., observability tooling).
+ */
+export interface KeyMaterial {
+  /** The raw key bytes */
+  key: Uint8Array;
+  /** Context used for key derivation */
+  derivationContext: Record<string, string>;
+  /** Algorithm identifier */
+  algorithm: string;
+  /** Key derivation function identifier */
+  kdf: string;
+}
+
+/**
+ * Optional encryption support for workflow data.
+ * All methods are optional - when not provided, data is stored unencrypted.
+ */
+export interface Encryptor {
+  /** Encrypt data with the given context */
+  encrypt?(data: Uint8Array, context: EncryptionContext): Promise<Uint8Array>;
+  /** Decrypt data with the given context */
+  decrypt?(data: Uint8Array, context: EncryptionContext): Promise<Uint8Array>;
+  /** Retrieve key material for external decryption (e.g., o11y tooling) */
+  getKeyMaterial?(
+    options: Record<string, unknown>
+  ): Promise<KeyMaterial | null>;
+}
+
+/**
  * The "World" interface represents how Workflows are able to communicate with the outside world.
  */
-export interface World extends Queue, Storage, Streamer {
+export interface World extends Queue, Storage, Streamer, Encryptor {
   /**
    * A function that will be called to start any background tasks needed by the World implementation.
    * For example, in the case of a queue backed World, this would start the queue processing.
    */
   start?(): Promise<void>;
+
+  /**
+   * Resolve an Encryptor that can encrypt/decrypt data for a specific workflow run.
+   *
+   * This is needed when operating on data that belongs to a different deployment
+   * context (e.g., `resumeHook()` called from a newer deployment targeting a
+   * workflow run from an older deployment). The returned Encryptor uses the
+   * correct key for the target run's deployment.
+   *
+   * When not implemented, the World itself is used as the Encryptor (which works
+   * for same-deployment operations).
+   *
+   * @param runId - The workflow run ID to resolve an encryptor for
+   * @returns An Encryptor that can handle data for the given run
+   */
+  getEncryptorForRun?(runId: string): Promise<Encryptor>;
 }

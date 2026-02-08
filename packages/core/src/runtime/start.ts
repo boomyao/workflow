@@ -121,8 +121,9 @@ export async function start<TArgs extends unknown[], TResult>(
       // Pass client-generated runId - server will accept and use it
       const workflowArguments = await dehydrateWorkflowArguments(
         args,
-        ops,
         runId,
+        world,
+        ops,
         globalThis,
         v1Compat
       );

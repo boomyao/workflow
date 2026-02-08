@@ -287,8 +287,9 @@ const stepHandler = getWorldHandlers().createQueueHandler(
                 const startTime = Date.now();
                 const result = await hydrateStepArguments(
                   step.input,
-                  ops,
-                  workflowRunId
+                  workflowRunId,
+                  world,
+                  ops
                 );
                 const durationMs = Date.now() - startTime;
                 hydrateSpan?.setAttributes({
@@ -343,8 +344,9 @@ const stepHandler = getWorldHandlers().createQueueHandler(
                 const startTime = Date.now();
                 const dehydrated = await dehydrateStepReturnValue(
                   result,
-                  ops,
-                  workflowRunId
+                  workflowRunId,
+                  world,
+                  ops
                 );
                 const durationMs = Date.now() - startTime;
                 dehydrateSpan?.setAttributes({

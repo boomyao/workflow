@@ -1,6 +1,7 @@
 import { waitUntil } from '@vercel/functions';
 import { ERROR_SLUGS, WorkflowRuntimeError } from '@workflow/errors';
 import {
+  type Encryptor,
   type Hook,
   isLegacySpecVersion,
   SPEC_VERSION_CURRENT,
@@ -18,6 +19,40 @@ import { getWorkflowQueueName } from './helpers.js';
 import { getWorld } from './world.js';
 
 /**
+ * Resolve the encryptor for a given run ID.
+ * If the world supports per-run encryptors, use that; otherwise fall back to the world itself.
+ */
+async function resolveEncryptorForRun(runId: string): Promise<Encryptor> {
+  const world = getWorld();
+  if (
+    'getEncryptorForRun' in world &&
+    typeof (world as any).getEncryptorForRun === 'function'
+  ) {
+    return await (world as any).getEncryptorForRun(runId);
+  }
+  return world;
+}
+
+/**
+ * Internal helper that returns both the hook and the resolved encryptor.
+ */
+async function getHookByTokenWithEncryptor(
+  token: string
+): Promise<{ hook: Hook; encryptor: Encryptor }> {
+  const world = getWorld();
+  const hook = await world.hooks.getByToken(token);
+  const encryptor = await resolveEncryptorForRun(hook.runId);
+  if (typeof hook.metadata !== 'undefined') {
+    hook.metadata = await hydrateStepArguments(
+      hook.metadata as any,
+      hook.runId,
+      encryptor
+    );
+  }
+  return { hook, encryptor };
+}
+
+/**
  * Get the hook by token to find the associated workflow run,
  * and hydrate the `metadata` property if it was set from within
  * the workflow run.
@@ -25,15 +60,7 @@ import { getWorld } from './world.js';
  * @param token - The unique token identifying the hook
  */
 export async function getHookByToken(token: string): Promise<Hook> {
-  const world = getWorld();
-  const hook = await world.hooks.getByToken(token);
-  if (typeof hook.metadata !== 'undefined') {
-    hook.metadata = await hydrateStepArguments(
-      hook.metadata as any,
-      [],
-      hook.runId
-    );
-  }
+  const { hook } = await getHookByTokenWithEncryptor(token);
   return hook;
 }
 
@@ -68,17 +95,24 @@ export async function getHookByToken(token: string): Promise<Hook> {
  */
 export async function resumeHook<T = any>(
   tokenOrHook: string | Hook,
-  payload: T
+  payload: T,
+  _encryptor?: Encryptor
 ): Promise<Hook> {
   return await waitedUntil(() => {
     return trace('hook.resume', async (span) => {
       const world = getWorld();
 
       try {
-        const hook =
-          typeof tokenOrHook === 'string'
-            ? await getHookByToken(tokenOrHook)
-            : tokenOrHook;
+        let hook: Hook;
+        let encryptor: Encryptor;
+        if (typeof tokenOrHook === 'string') {
+          const result = await getHookByTokenWithEncryptor(tokenOrHook);
+          hook = result.hook;
+          encryptor = _encryptor ?? result.encryptor;
+        } else {
+          hook = tokenOrHook;
+          encryptor = _encryptor ?? (await resolveEncryptorForRun(hook.runId));
+        }
 
         span?.setAttributes({
           ...Attribute.HookToken(hook.token),
@@ -91,8 +125,9 @@ export async function resumeHook<T = any>(
         const v1Compat = isLegacySpecVersion(hook.specVersion);
         const dehydratedPayload = await dehydrateStepReturnValue(
           payload,
-          ops,
           hook.runId,
+          encryptor,
+          ops,
           globalThis,
           v1Compat
         );
@@ -200,7 +235,7 @@ export async function resumeWebhook(
   token: string,
   request: Request
 ): Promise<Response> {
-  const hook = await getHookByToken(token);
+  const { hook, encryptor } = await getHookByTokenWithEncryptor(token);
 
   let response: Response | undefined;
   let responseReadable: ReadableStream<Response> | undefined;
@@ -229,7 +264,7 @@ export async function resumeWebhook(
     response = new Response(null, { status: 202 });
   }
 
-  await resumeHook(hook, request);
+  await resumeHook(hook, request, encryptor);
 
   if (responseReadable) {
     // Wait for the readable stream to emit one chunk,

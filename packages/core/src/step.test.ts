@@ -19,6 +19,8 @@ function setupWorkflowContext(events: Event[]): WorkflowOrchestratorContext {
   const ulid = monotonicFactory(() => context.globalThis.Math.random());
   const workflowStartedAt = context.globalThis.Date.now();
   return {
+    runId: 'wrun_test',
+    encryptor: {},
     globalThis: context.globalThis,
     eventsConsumer: new EventsConsumer(events),
     invocationsQueue: new Map(),
@@ -39,7 +41,7 @@ describe('createUseStep', () => {
         eventType: 'step_completed',
         correlationId: 'step_01K11TFZ62YS0YYFDQ3E8B9YCV',
         eventData: {
-          result: await dehydrateStepReturnValue(3),
+          result: await dehydrateStepReturnValue(3, 'wrun_test', {}),
         },
         createdAt: new Date(),
       },
@@ -190,7 +192,7 @@ describe('createUseStep', () => {
         eventType: 'step_completed',
         correlationId: 'step_01K11TFZ62YS0YYFDQ3E8B9YCV',
         eventData: {
-          result: await dehydrateStepReturnValue(undefined),
+          result: await dehydrateStepReturnValue(undefined, 'wrun_test', {}),
         },
         createdAt: new Date(),
       },
@@ -409,7 +411,7 @@ describe('createUseStep', () => {
         eventType: 'step_completed',
         correlationId: 'step_01K11TFZ62YS0YYFDQ3E8B9YCV',
         eventData: {
-          result: await dehydrateStepReturnValue(42),
+          result: await dehydrateStepReturnValue(42, 'wrun_test', {}),
         },
         createdAt: new Date(),
       },
